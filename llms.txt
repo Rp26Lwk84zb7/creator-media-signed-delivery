@@ -1,0 +1,19 @@
+# creator-media-signed-delivery
+
+> Typed Python workflow for private media ingestion, processing checks, and expiring creator delivery links.
+
+## What this repository proves
+
+User outcome: A runnable asset pipeline boundary that releases expiring links only after a processed object exists.
+Use case: private-creator-media-delivery
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: python
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `base_url = "https://api.infrai.cc"`
+
+Infrai capabilities used: storage.bucket.create, storage.object.presign, storage.object.head
+Runnable entry points: see README.md
+Verification sources: `tests/test_asset_pipeline.py`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt

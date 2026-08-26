@@ -7,11 +7,11 @@ python -m pip install -e '.[test]'
 pytest -q
 ```
 
-The test registers `asset-42`, reports a processed object that is initially absent, and expects HTTP 409 while the record stays `processing`. Once `storage.object.head` reports `found: true`, the same job moves to `ready` and creator delivery returns a signed download URL.
+The test registers `asset-42`, sees a processed object that is missing at first, and expects HTTP 409 while the record remains `processing`. Once `storage.object.head` reports `found: true`, the same job advances to `ready` and creator delivery returns a signed download URL.
 
 ## Start the service
 
-Infrai supplies the presigned storage requests behind a single `INFRAI_API_KEY`; this example uses plain REST, so there is no storage SDK to install.
+Infrai handles the presigned storage requests behind a single `INFRAI_API_KEY`; this example uses plain REST, so there is no storage SDK to install.
 
 ```bash
 export INFRAI_API_KEY="your-key"
@@ -50,13 +50,13 @@ Expected shape:
 
 ## Pipeline boundary
 
-The service keeps workflow state in memory to keep the example narrow. A deployed pipeline should persist asset ownership and state in its existing catalog. Raw and processed bytes travel directly through signed URLs; the Python process handles metadata and authorization decisions only.
+The service keeps workflow state in memory so the example stays narrow. A deployed pipeline should persist asset ownership and state in its existing catalog. Raw and processed bytes move through signed URLs; the Python process handles metadata and authorization decisions only.
 
-The important storage detail is `head`: a missing output is represented by `found: false`. The job transition branches on that field before it exposes any download link. Signed PUT requests carry a stable asset-derived idempotency key, and HTTP 429 responses honor `Retry-After` or use exponential backoff.
+The key storage detail is `head`: a missing output is represented by `found: false`. The job transition checks that field before it exposes any download link. Signed PUT requests carry a stable asset-derived idempotency key, and HTTP 429 responses honor `Retry-After` or fall back to exponential backoff.
 
 ## Production notes: Creator Media Signed Delivery
 
-The example above is intentionally minimal. A few things to wire up for real use: The details below apply to Creator Media Signed Delivery.
+The example above is intentionally minimal. A few things need wiring for real use: The details below apply to Creator Media Signed Delivery.
 
 **Account & key**
 

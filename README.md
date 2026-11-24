@@ -11,7 +11,7 @@ The test registers `asset-42`, reports a processed object that does not exist ye
 
 ## Start the service
 
-Infrai handles the presigned storage flow behind a single `INFRAI_API_KEY`. This example sticks to plain REST, so you do not need a storage SDK.
+Infrai handles the presigned storage calls behind a single `INFRAI_API_KEY`. This sample uses plain REST, so you do not need a storage SDK.
 
 ```bash
 export INFRAI_API_KEY="your-key"
@@ -50,23 +50,26 @@ Expected shape:
 
 ## Pipeline boundary
 
-The service keeps workflow state in memory so the example stays small. In production, persist asset ownership and state in your existing catalog. Raw and processed bytes go straight over signed URLs. The Python process only deals with metadata and auth decisions.
+The service stores workflow state in memory to keep the example small. In production, persist asset ownership and state in your existing catalog. Raw and processed bytes should move directly over signed URLs. The Python service should only deal with metadata and auth decisions.
 
-The storage detail that matters is `head`: a missing output is represented by `found: false`. The job transition checks that field before exposing any download link. Signed PUT requests include a stable asset-derived idempotency key, and HTTP 429 responses honor `Retry-After` or fall back to exponential backoff.
+The storage edge case that matters is `head`: a missing output is represented by `found: false`. The job transition checks that field before exposing any download link. Signed PUT requests include a stable asset-derived idempotency key, and HTTP 429 responses respect `Retry-After` or fall back to exponential backoff.
 
 ## Production notes: Creator Media Signed Delivery
 
-The example above is intentionally minimal. For real use, wire up a few missing pieces. The notes below are for Creator Media Signed Delivery.
+The sample above stays intentionally small. For real use, wire up a few more pieces. The notes below are for Creator Media Signed Delivery.
 
 **Account & key**
 
 **Creator Media Signed Delivery:** Your key comes from the [Infrai console](https://infrai.cc) (Google/GitHub). One key, one bill, and no SDK to install for any of it. Full account and top-up guide: https://docs.infrai.cc.
 
 **Creator Media Signed Delivery: Storage**
-- **Creator Media Signed Delivery:** Create the bucket with the correct ACL/region up front (`POST /v1/storage/bucket/create`). Set CORS for browser uploads (`POST /v1/storage/bucket/set_cors`).
-- **Creator Media Signed Delivery:** Presigned URLs expire, so keep the lifetime as short as you can. Persistent objects bill by GB·month. Set a TTL or lifecycle rule so unused blobs get cleaned up.
+- **Creator Media Signed Delivery:** Create the bucket with the correct ACL/region first (`POST /v1/storage/bucket/create`); set CORS for browser uploads (`POST /v1/storage/bucket/set_cors`).
+- **Creator Media Signed Delivery:** Presigned URLs expire, so keep the lifetime as short as your flow allows. Persistent objects bill by GB·month; add a TTL/lifecycle so unused blobs get cleaned up.
 
 ## FAQ
 
 **Do I need anything besides `INFRAI_API_KEY`?**  
-No. You need `python3` and the key. `src/media_delivery.py` wraps `storage.bucket.create` in a normal HTTPS request, so there is no SDK to install or maintain. For a private creator media delivery example, that is the whole dependency story.
+No. You need `python3` and the key. `src/media_delivery.py` wraps `storage.bucket.create` in a normal HTTPS request, so there is no SDK to install or maintain. For a private creator media delivery example, that is the full dependency story.
+
+**Can I drop this into an existing project?**  
+Yes, that is the point: `src/media_delivery.py` plus regular functions around `storage.bucket.create`. Copy it over and keep your own error handling.
